@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>React | official static demo</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.20.0/babel.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <!-- Hello World
+    <script type="text/babel">
+      class App extends React.Component {
+        render() {
+          return <h1>Hello World!</h1>;
+        }
+      }
+
+      // ReactDOM.render(<App />, document.querySelector('#root'));
+
+      const root = ReactDOM.createRoot(document.querySelector('#root'));
+      root.render(<App />);
+    </script> -->
+
+    <!-- Component (Function / Props)
+    <script type="text/babel">
+      function H1(props = {}) {
+        return <h1>{props.text}</h1>;
+      }
+
+      const root = ReactDOM.createRoot(document.querySelector('#root'));
+      root.render(<H1 text={'Hello World'} />);
+    </script> -->
+
+    <!-- Component (Class / Lifecycle / Props)
+    <script type="text/babel">
+      class Clock extends React.Component {
+        constructor(props) {
+          super(props);
+          this.state = {
+            date: new Date(),
+          };
+        }
+
+        tick() {
+          this.setState({
+            date: new Date(),
+          });
+        }
+
+        componentDidMount() {
+          this.timer = setInterval(() => this.tick(), 1000);
+        }
+
+        componentUnMount() {
+          clearInterval(this.timer);
+        }
+
+        render() {
+          return (
+            <div>
+              <h2>Time: {this.state.date.toLocaleTimeString()}.</h2>
+            </div>
+          );
+        }
+      }
+
+      const root = ReactDOM.createRoot(document.querySelector('#root'));
+      root.render(<Clock />);
+    </script> -->
+
+    <!-- Component Event
+    <script type="text/babel">
+      class Clock extends React.Component {
+        constructor(props) {
+          super(props);
+          this.state = {
+            date: new Date(),
+            textColor: 'black',
+          };
+        }
+
+        tick() {
+          this.setState({
+            date: new Date(),
+          });
+        }
+
+        forcesElement() {
+          this.setState({
+            textColor: 'red',
+          });
+        }
+
+        unForcesElement() {
+          this.setState({
+            textColor: 'black',
+          });
+        }
+
+        componentDidMount() {
+          this.timer = setInterval(() => this.tick(), 1000);
+        }
+
+        componentUnMount() {
+          clearInterval(this.timer);
+        }
+
+        render() {
+          return (
+            <div>
+              <h2
+                onMouseEnter={() => this.forcesElement()}
+                onMouseLeave={() => this.unForcesElement()}
+                style={{ color: this.state.textColor }}
+              >
+                Time: {this.state.date.toLocaleTimeString()}.
+              </h2>
+            </div>
+          );
+        }
+      }
+
+      const root = ReactDOM.createRoot(document.querySelector('#root'));
+      root.render(<Clock />);
+    </script> -->
+
+    <!-- IF Else Rendder
+    <script type="text/babel">
+      class Clock extends React.Component {
+        constructor(props) {
+          super(props);
+          this.state = {
+            date: new Date(),
+          };
+        }
+
+        tick() {
+          this.setState({
+            date: new Date(),
+          });
+        }
+
+        componentDidMount() {
+          this.timer = setInterval(() => this.tick(), 1000);
+        }
+
+        componentUnMount() {
+          clearInterval(this.timer);
+        }
+
+        render() {
+          return (
+            <div>
+              {new Date(this.state.date).getSeconds() % 2 ? (
+                <h2 style={{ color: 'red' }}>
+                  Time: {this.state.date.toLocaleTimeString()}.
+                </h2>
+              ) : (
+                <h2>Time: {this.state.date.toLocaleTimeString()}.</h2>
+              )}
+            </div>
+          );
+        }
+      }
+
+      const root = ReactDOM.createRoot(document.querySelector('#root'));
+      root.render(<Clock />);
+    </script> -->
+
+    <!-- Hook Hook Closure
+    <script type="text/babel">
+      /**
+       * 在 fiber node 的 memorizedState 屬性存放一個連結串列，
+       * 連結串列節點和 hook 一一對應，
+       * 每個 hook 都在各自對應的節點上存取資料。
+       *
+       * useEffect、useMomo、useCallback 等都有 deps 的引數，
+       * 實現的時候會對比新舊兩次的 deps，
+       * 如果變了才會重新執行傳入的函式。
+       * 所以 undefined、null 每次都會執行，
+       * [] 只會執行一次，
+       * [state] 在 state 變了才會再次執行。
+       *
+       * 閉包陷阱產生的原因就是 useEffect 等 hook 裡用到了某個 state，
+       * 但是沒有加到 deps 數組裡，
+       * 這樣導致 state 變了卻沒有執行新傳入的函式，
+       * 依然引用的之前的 state。
+       *
+       * 閉包陷阱的解決也很簡單，正確設定 deps 陣列就可以了，
+       * 這樣每次用到的 state 變了就會執行新函式，
+       * 引用新的 state。不過還要注意要清理下上次的定時器、事件監聽器等。
+       *
+       * hooks 的原理確實也不難，
+       * 就是在 memorizedState 連結串列上的各節點存取資料，
+       * 完成各自的邏輯的，唯一需要注意的是 deps 陣列引發的這個閉包陷阱問題。
+       */
+      function Clock() {
+        const [time, setTime] = React.useState(new Date());
+
+        const deps = [];
+        // const deps = null;
+        // const deps = [time];
+
+        /**
+         * 重 render 後會 diff 判斷 deps，與先前一樣就用之前的 callback
+         */
+        React.useEffect(() => {
+          const timer = setInterval(() => {
+            setTime(new Date());
+            console.log(time);
+          }, 1000);
+
+          return () => clearInterval(timer);
+        }, deps);
+
+        return <p>{time.toLocaleTimeString()}</p>;
+      }
+
+      const root = ReactDOM.createRoot(document.querySelector('#root'));
+      root.render(<Clock />);
+    </script> -->
+
+    <!-- Ref
+    <script type="text/babel">
+      function Input() {
+        const ref = React.createRef();
+
+        const typeingInput = () => {
+          console.log(ref.current.value);
+        };
+
+        React.useEffect(() => ref.current.focus());
+
+        return <input ref={ref} onInput={typeingInput}></input>;
+      }
+
+      const root = ReactDOM.createRoot(document.querySelector('#root'));
+      root.render(<Input />);
+    </script> -->
+
+    <!-- Lazy & Suspense
+    <script type="text/babel">
+      function Clock() {
+        const [time, setTime] = React.useState(new Date());
+
+        React.useEffect(() => {
+          const timer = setInterval(() => {
+            setTime(new Date());
+          }, 1000);
+
+          return () => clearInterval(timer);
+        });
+
+        return <p>{time.toLocaleTimeString()}</p>;
+      }
+
+      const LazyClock = React.lazy(() => {
+        return new Promise((reslove) => {
+          setTimeout(() => reslove({ default: Clock }), 3000);
+        });
+      });
+
+      function App() {
+        return (
+          <div>
+            <React.Suspense fallback={<p>Loading...</p>}>
+              <LazyClock />
+            </React.Suspense>
+          </div>
+        );
+      }
+
+      const root = ReactDOM.createRoot(document.querySelector('#root'));
+      root.render(<App />);
+    </script> -->
+
+    <!-- Content
+    <script type="text/babel">
+      const ThemeCTX = React.createContext({
+        dark: false,
+        toogle: () => {},
+      });
+
+      function Clock(props) {
+        const [time, setTime] = React.useState(new Date());
+        const { dark } = React.useContext(ThemeCTX);
+
+        React.useEffect(() => {
+          const timer = setInterval(() => {
+            setTime(new Date());
+          }, 1000);
+
+          return () => clearInterval(timer);
+        });
+
+        const baseStyle = {
+          transition: 'all .3s',
+        };
+
+        const style = {
+          ...baseStyle,
+          background: 'black',
+          color: 'white',
+        };
+
+        return (
+          <p style={dark ? style : baseStyle}>{time.toLocaleTimeString()}</p>
+        );
+      }
+
+      function ThemeToggleBTN(props) {
+        const { dark, toogle } = React.useContext(ThemeCTX);
+
+        return (
+          <button onClick={toogle}>switch to {dark ? 'light' : 'dark'}</button>
+        );
+      }
+
+      function App() {
+        const [dark, setDark] = React.useState(false);
+        const toogle = () => {
+          setDark(!dark);
+        };
+
+        return (
+          <div>
+            <ThemeCTX.Provider value={{ dark, toogle }}>
+              <ThemeToggleBTN />
+              <Clock />
+            </ThemeCTX.Provider>
+          </div>
+        );
+      }
+
+      const root = ReactDOM.createRoot(document.querySelector('#root'));
+      root.render(<App />);
+    </script> -->
+
+    <!-- Error Boundary
+    <script type="text/babel">
+      class ErrorBoundary extends React.Component {
+        constructor(props) {
+          super(props);
+          this.state = { error: null, errorInfo: null };
+        }
+
+        componentDidCatch(error, errorInfo) {
+          this.setState({ error, errorInfo });
+        }
+
+        render() {
+          if (this.state.errorInfo) {
+            return <h1>Something went wrong.</h1>;
+          }
+
+          return this.props.children;
+        }
+      }
+
+      class Clock extends React.Component {
+        constructor(props) {
+          super(props);
+          this.state = {
+            date: props.date,
+          };
+        }
+
+        tick() {
+          this.setState({
+            date: new Date(),
+          });
+        }
+
+        componentDidMount() {
+          this.timer = setInterval(() => this.tick(), 1000);
+        }
+
+        componentUnMount() {
+          clearInterval(this.timer);
+        }
+
+        render() {
+          return (
+            <div>
+              <p>{this.state.date.toLocaleTimeString()}.</p>
+            </div>
+          );
+        }
+      }
+
+      function App() {
+        return (
+          <ErrorBoundary>
+            <Clock />
+          </ErrorBoundary>
+        );
+      }
+
+      const root = ReactDOM.createRoot(document.querySelector('#root'));
+      root.render(<App />);
+    </script> -->
+
+    <!-- Ref forward & useImperativeHandle
+    <script type="text/babel">
+      const FancyInput = React.forwardRef((props, ref) => {
+        const inputRef = React.createRef();
+
+        React.useImperativeHandle(ref, () => {
+          return {
+            in: () => {
+              inputRef.current.focus();
+            },
+          };
+        });
+
+        return <input ref={inputRef}>{props.children}</input>;
+      });
+
+      function App() {
+        const ref = React.useRef();
+        const click = () => ref.current.in();
+
+        return (
+          <div>
+            <button onClick={click}>Click ME</button>
+            <FancyInput ref={ref}></FancyInput>
+          </div>
+        );
+      }
+
+      const root = ReactDOM.createRoot(document.querySelector('#root'));
+      root.render(<App />);
+    </script> -->
+
+    <!-- HOC Ref forward & Fragment
+    <script type="text/babel">
+      class Bar extends React.Component {
+        constructor(props) {
+          super(props);
+          this.state = {
+            message: 'This is Bar',
+          };
+        }
+
+        componentDidMount() {
+          console.log(this);
+        }
+
+        render() {
+          return (
+            <div ref={this.props.customRef}>
+              name: {this.props.name}
+              <br />
+              age: {this.props.age}
+              <br />
+              hobby: {this.props.hobby}
+            </div>
+          );
+        }
+      }
+
+      function logProps(WrappedComponent) {
+        class LogProps extends React.Component {
+          constructor(props) {
+            super(props);
+            this.state = {
+              message: 'This is LogProps',
+            };
+          }
+
+          componentDidUpdate(prevProps) {
+            console.log('Previous props: ', prevProps);
+            console.log('Current props: ', this.props);
+          }
+
+          render() {
+            const { forwardRef, ...props } = this.props;
+            return <WrappedComponent {...props} ref={forwardRef} />;
+          }
+        }
+        // return LogProps;
+        return React.forwardRef((props, ref) => (
+          // 1
+          <LogProps {...props} forwardRef={ref} />
+        ));
+      }
+
+      const BarWithLogProps = logProps(Bar);
+
+      class App extends React.Component {
+        constructor(props) {
+          super(props);
+          this.state = {
+            name: 'Roman',
+            age: 23,
+            hobby: 'video game',
+          };
+          this.myRef = React.createRef();
+        }
+        handleClick = (e) => {
+          this.setState({
+            name: 'fxy',
+            age: 32,
+            hobby: 'swim',
+          });
+
+          console.log(this.myRef.current);
+        };
+        render() {
+          return (
+            <React.Fragment>
+              <button onClick={this.handleClick}>click to change props</button>
+              <BarWithLogProps {...this.state} ref={this.myRef} />
+            </React.Fragment>
+          );
+        }
+      }
+
+      const root = ReactDOM.createRoot(document.querySelector('#root'));
+      root.render(<App />);
+    </script> -->
+    </script>
+  </body>
+</html>
